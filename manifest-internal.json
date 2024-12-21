@@ -1,0 +1,29 @@
+{
+  "name": "identity internal",
+  "id": "1392760058644879893",
+  "api": "1.0.0",
+  "main": "./code.js",
+  "ui": "./index.html",
+  "capabilities": [],
+  "enableProposedApi": false,
+  "editorType": ["figma"],
+  "documentAccess": "dynamic-page",
+  "networkAccess": {
+    "allowedDomains": [
+      "https://api-prod-construct.figr.design",
+      "https://api-identity.figr.design",
+      "https://api-staging-construct.figr.design",
+      "https://api-staging-identity.figr.design",
+      "https://fonts.googleapis.com",
+      "https://fonts.gstatic.com/",
+      "https://figr.design/",
+      "https://images.unsplash.com/",
+      "https://api.figma.com",
+      "https://mixpanel.figr.design",
+      "https://hooks.slack.com",
+      "https://d3os49tc9jbj3a.cloudfront.net/"
+    ],
+    "devAllowedDomains": ["http://localhost:3000"]
+  },
+  "permissions": ["teamlibrary", "currentuser"]
+}

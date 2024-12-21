@@ -1,0 +1,13 @@
+{
+  "compilerOptions": {
+    "paths": {
+      "@/*": ["./*"]
+    },
+    "moduleResolution": "Bundler",
+    "target": "es6",
+    "lib": ["es6", "ES2019"],
+    "strict": false,
+    "typeRoots": ["../../node_modules/@figma"],
+    "noImplicitAny": false
+  }
+}
