@@ -24,13 +24,6 @@ figma.ui.resize(pluginDimensions.width, pluginDimensions.height);
 
 figma.on("run", async () => {
   figma.loadAllPagesAsync();
-
-  const node1 = await figma.getNodeByIdAsync("421:43106");
-  const node2 = await figma.getNodeByIdAsync("413:42172");
-  if (node1 && node2) {
-    figma.viewport.scrollAndZoomIntoView([node1, node2]);
-    figma.currentPage.selection = [node1, node2];
-  }
 });
 
 export const getCurrentPageSelection = (): readonly SceneNode[] => {
