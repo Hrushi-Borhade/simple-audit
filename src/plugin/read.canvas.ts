@@ -211,7 +211,7 @@ export async function getAllChildren(node) {
       icons: [],
       uniqueStyles: [],
       uniqueVariables: [],
-      uniqueColors: [],
+      uniqueColors: []
     },
     spacing: {
       nodes: [],
@@ -219,6 +219,7 @@ export async function getAllChildren(node) {
     },
     effects: {
       effects: [],
+      uniqueEffects: [],
       uniqueStyles: []
     },
     text: {
@@ -348,6 +349,73 @@ export async function getAllChildren(node) {
   }
 
   // Process Effects
+  // async function processEffects(node, nodeType) {
+  //   try {
+  //     if (!SUPPORTED_NODES.effect.find((n) => n.toLowerCase() === nodeType))
+  //       return;
+  //     if (!node.effects || !node.effects.length) return;
+
+  //     const effectStyle = await getStyleById(node.effectStyleId);
+  //     if (effectStyle) {
+  //       const existingStyle = result.effects.uniqueStyles.find(
+  //         (style) => style.id === effectStyle.id
+  //       );
+  //       if (existingStyle) {
+  //         existingStyle.frequency += 1;
+  //       } else {
+  //         result.effects.uniqueStyles.push({ ...effectStyle, frequency: 1 });
+  //       }
+  //       result.effects.effects.push([{ ...node.effects[0], effectStyle }]);
+  //     } else {
+  //       result.effects.effects.push(node.effects);
+  //     }
+  //   } catch (error) {
+  //     console.error("Error processing effects:", error);
+  //   }
+  // }
+  // Helper function to normalize effect for comparison
+  function normalizeEffect(effect) {
+    const baseEffect = {
+      type: effect.type,
+      visible: effect.visible
+    };
+
+    switch (effect.type) {
+      case "DROP_SHADOW":
+      case "INNER_SHADOW":
+        return {
+          ...baseEffect,
+          color: `${effect.color.r}-${effect.color.g}-${effect.color.b}-${effect.color.a}`,
+          offset: `${effect.offset.x}-${effect.offset.y}`,
+          radius: effect.radius,
+          spread: effect.spread || 0,
+          blendMode: effect.blendMode,
+          showShadowBehindNode: effect.showShadowBehindNode || false
+        };
+      case "LAYER_BLUR":
+      case "BACKGROUND_BLUR":
+        return {
+          ...baseEffect,
+          radius: effect.radius
+        };
+      default:
+        return baseEffect;
+    }
+  }
+
+  // Helper function to generate a unique key for an entire effects array
+  function getEffectsKey(effects) {
+    const normalizedEffects = effects
+      .filter((effect) => effect.visible)
+      .map((effect) => normalizeEffect(effect))
+      .sort((a, b) => {
+        // Sort by type first, then by other properties
+        if (a.type !== b.type) return a.type.localeCompare(b.type);
+        return JSON.stringify(a).localeCompare(JSON.stringify(b));
+      });
+    return JSON.stringify(normalizedEffects);
+  }
+
   async function processEffects(node, nodeType) {
     try {
       if (!SUPPORTED_NODES.effect.find((n) => n.toLowerCase() === nodeType))
@@ -355,6 +423,8 @@ export async function getAllChildren(node) {
       if (!node.effects || !node.effects.length) return;
 
       const effectStyle = await getStyleById(node.effectStyleId);
+
+      // Process effects for uniqueStyles as before
       if (effectStyle) {
         const existingStyle = result.effects.uniqueStyles.find(
           (style) => style.id === effectStyle.id
@@ -368,11 +438,28 @@ export async function getAllChildren(node) {
       } else {
         result.effects.effects.push(node.effects);
       }
+
+      // Process the entire effects array as one unit
+      const effectsKey = getEffectsKey(node.effects);
+
+      const existingEffectGroup = result.effects.uniqueEffects.find(
+        (unique) => getEffectsKey(unique.value) === effectsKey
+      );
+
+      if (existingEffectGroup) {
+        if (!existingEffectGroup.nodeIds.includes(node.id)) {
+          existingEffectGroup.nodeIds.push(node.id);
+        }
+      } else {
+        result.effects.uniqueEffects.push({
+          value: [...node.effects], // Store the entire effects array
+          nodeIds: [node.id]
+        });
+      }
     } catch (error) {
       console.error("Error processing effects:", error);
     }
   }
-
   // Process Text/Typography
   function processText(node, nodeType) {
     try {
