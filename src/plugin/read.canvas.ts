@@ -210,7 +210,6 @@ export async function getAllChildren(node) {
       text: [],
       icons: [],
       uniqueStyles: [],
-      uniqueVariables: [],
       uniqueColors: []
     },
     spacing: {
@@ -224,6 +223,7 @@ export async function getAllChildren(node) {
     },
     text: {
       nodes: [],
+      uniqueText: [],
       uniqueStyles: []
     },
     grids: {
@@ -245,52 +245,59 @@ export async function getAllChildren(node) {
 
   async function processFills(node, nodeType) {
     try {
-      if (!SUPPORTED_NODES.fill.find((n) => n.toLowerCase() === nodeType))
+      if (!SUPPORTED_NODES?.fill?.find((n) => n?.toLowerCase() === nodeType))
         return;
-      if (!node.fills || !node.fills.length) return;
+      if (!node?.fills?.length) return;
 
-      const fillStyle = await getStyleById(node.fillStyleId);
+      const fillStyle = await getStyleById(node?.fillStyleId);
       if (fillStyle) {
         // Handle unique styles frequency
-        const existingStyle = result.colors.uniqueStyles.find(
-          (style) => style.id === fillStyle.id
+        const existingStyle = result?.colors?.uniqueStyles?.find(
+          (style) => style?.id === fillStyle?.id
         );
         if (existingStyle) {
-          existingStyle.frequency += 1;
+          existingStyle.frequency = (existingStyle.frequency ?? 0) + 1;
+          existingStyle.nodeIds?.push(node?.id);
         } else {
-          result.colors.uniqueStyles.push({ ...fillStyle, frequency: 1 });
+          result?.colors?.uniqueStyles?.push({
+            ...fillStyle,
+            frequency: 1,
+            nodeIds: [node?.id]
+          });
         }
       }
 
       const processedFills = fillStyle
-        ? [{ ...node.fills[0], fillStyle }]
-        : node.fills;
+        ? [{ ...node?.fills[0], fillStyle }]
+        : node?.fills;
 
-      if (SUPPORTED_NODES.text.find((n) => n.toLowerCase() === nodeType)) {
-        result.colors.text.push(processedFills);
+      if (SUPPORTED_NODES?.text?.find((n) => n?.toLowerCase() === nodeType)) {
+        result?.colors?.text?.push(processedFills);
       } else if (
-        SUPPORTED_NODES.icon.find((n) => n.toLowerCase() === nodeType)
+        SUPPORTED_NODES?.icon?.find((n) => n?.toLowerCase() === nodeType)
       ) {
-        result.colors.icons.push(processedFills);
+        result?.colors?.icons?.push(processedFills);
       } else {
-        result.colors.fills.push(processedFills);
+        result?.colors?.fills?.push(processedFills);
       }
 
-      node.fills.forEach((fill) => {
-        if (fill.type === "SOLID") {
-          const normalizedColor = normalizeColor(fill.color, fill.opacity);
+      node?.fills?.forEach((fill) => {
+        if (fill?.type === "SOLID") {
+          const normalizedColor = normalizeColor(fill?.color, fill?.opacity);
           if (normalizedColor) {
-            const existingColor = result.colors.uniqueColors.find(
-              (color) => color.name === normalizedColor
+            const existingColor = result?.colors?.uniqueColors?.find(
+              (color) => color?.name === normalizedColor
             );
             if (existingColor) {
-              existingColor.frequency += 1;
+              existingColor.frequency = (existingColor.frequency ?? 0) + 1;
+              existingColor.nodeIds?.push(node?.id);
             } else {
-              result.colors.uniqueColors.push({
+              result?.colors?.uniqueColors?.push({
                 name: normalizedColor,
-                color: { ...fill.color },
-                opacity: fill.opacity,
-                frequency: 1
+                color: { ...fill?.color },
+                opacity: fill?.opacity,
+                frequency: 1,
+                nodeIds: [node?.id]
               });
             }
           }
@@ -300,44 +307,53 @@ export async function getAllChildren(node) {
       console.error("Error processing fills:", error);
     }
   }
-
   // Process Strokes
   async function processStrokes(node, nodeType) {
     try {
-      if (!SUPPORTED_NODES.stroke.find((n) => n.toLowerCase() === nodeType))
+      if (!SUPPORTED_NODES?.stroke?.find((n) => n?.toLowerCase() === nodeType))
         return;
-      if (!node.strokes || !node.strokes.length) return;
+      if (!node?.strokes?.length) return;
 
-      const strokeStyle = await getStyleById(node.strokeStyleId);
+      const strokeStyle = await getStyleById(node?.strokeStyleId);
       if (strokeStyle) {
-        const existingStyle = result.colors.uniqueStyles.find(
-          (style) => style.id === strokeStyle.id
+        const existingStyle = result?.colors?.uniqueStyles?.find(
+          (style) => style?.id === strokeStyle?.id
         );
         if (existingStyle) {
-          existingStyle.frequency += 1;
+          existingStyle.frequency = (existingStyle.frequency ?? 0) + 1;
+          existingStyle.nodeIds?.push(node?.id);
         } else {
-          result.colors.uniqueStyles.push({ ...strokeStyle, frequency: 1 });
+          result?.colors?.uniqueStyles?.push({
+            ...strokeStyle,
+            frequency: 1,
+            nodeIds: [node?.id]
+          });
         }
-        result.colors.strokes.push([{ ...node.strokes[0], strokeStyle }]);
+        result?.colors?.strokes?.push([{ ...node?.strokes[0], strokeStyle }]);
       } else {
-        result.colors.strokes.push(node.strokes);
+        result?.colors?.strokes?.push(node?.strokes);
       }
 
-      node.strokes.forEach((stroke) => {
-        if (stroke.type === "SOLID") {
-          const normalizedColor = normalizeColor(stroke.color, stroke.opacity);
+      node?.strokes?.forEach((stroke) => {
+        if (stroke?.type === "SOLID") {
+          const normalizedColor = normalizeColor(
+            stroke?.color,
+            stroke?.opacity
+          );
           if (normalizedColor) {
-            const existingColor = result.colors.uniqueColors.find(
-              (color) => color.name === normalizedColor
+            const existingColor = result?.colors?.uniqueColors?.find(
+              (color) => color?.name === normalizedColor
             );
             if (existingColor) {
-              existingColor.frequency += 1;
+              existingColor.frequency = (existingColor.frequency ?? 0) + 1;
+              existingColor.nodeIds?.push(node?.id);
             } else {
-              result.colors.uniqueColors.push({
+              result?.colors?.uniqueColors?.push({
                 name: normalizedColor,
-                color: { ...stroke.color },
-                opacity: stroke.opacity,
-                frequency: 1
+                color: { ...stroke?.color },
+                opacity: stroke?.opacity,
+                frequency: 1,
+                nodeIds: [node?.id]
               });
             }
           }
@@ -347,56 +363,31 @@ export async function getAllChildren(node) {
       console.error("Error processing strokes:", error);
     }
   }
-
   // Process Effects
-  // async function processEffects(node, nodeType) {
-  //   try {
-  //     if (!SUPPORTED_NODES.effect.find((n) => n.toLowerCase() === nodeType))
-  //       return;
-  //     if (!node.effects || !node.effects.length) return;
-
-  //     const effectStyle = await getStyleById(node.effectStyleId);
-  //     if (effectStyle) {
-  //       const existingStyle = result.effects.uniqueStyles.find(
-  //         (style) => style.id === effectStyle.id
-  //       );
-  //       if (existingStyle) {
-  //         existingStyle.frequency += 1;
-  //       } else {
-  //         result.effects.uniqueStyles.push({ ...effectStyle, frequency: 1 });
-  //       }
-  //       result.effects.effects.push([{ ...node.effects[0], effectStyle }]);
-  //     } else {
-  //       result.effects.effects.push(node.effects);
-  //     }
-  //   } catch (error) {
-  //     console.error("Error processing effects:", error);
-  //   }
-  // }
   // Helper function to normalize effect for comparison
   function normalizeEffect(effect) {
     const baseEffect = {
-      type: effect.type,
-      visible: effect.visible
+      type: effect?.type,
+      visible: effect?.visible
     };
 
-    switch (effect.type) {
+    switch (effect?.type) {
       case "DROP_SHADOW":
       case "INNER_SHADOW":
         return {
           ...baseEffect,
-          color: `${effect.color.r}-${effect.color.g}-${effect.color.b}-${effect.color.a}`,
-          offset: `${effect.offset.x}-${effect.offset.y}`,
-          radius: effect.radius,
-          spread: effect.spread || 0,
-          blendMode: effect.blendMode,
-          showShadowBehindNode: effect.showShadowBehindNode || false
+          color: `${effect?.color?.r}-${effect?.color?.g}-${effect?.color?.b}-${effect?.color?.a}`,
+          offset: `${effect?.offset?.x}-${effect?.offset?.y}`,
+          radius: effect?.radius,
+          spread: effect?.spread || 0,
+          blendMode: effect?.blendMode,
+          showShadowBehindNode: effect?.showShadowBehindNode || false
         };
       case "LAYER_BLUR":
       case "BACKGROUND_BLUR":
         return {
           ...baseEffect,
-          radius: effect.radius
+          radius: effect?.radius
         };
       default:
         return baseEffect;
@@ -406,54 +397,59 @@ export async function getAllChildren(node) {
   // Helper function to generate a unique key for an entire effects array
   function getEffectsKey(effects) {
     const normalizedEffects = effects
-      .filter((effect) => effect.visible)
+      .filter((effect) => effect?.visible)
       .map((effect) => normalizeEffect(effect))
       .sort((a, b) => {
         // Sort by type first, then by other properties
-        if (a.type !== b.type) return a.type.localeCompare(b.type);
-        return JSON.stringify(a).localeCompare(JSON.stringify(b));
+        if (a?.type !== b?.type) return a?.type?.localeCompare(b?.type);
+        return JSON.stringify(a)?.localeCompare(JSON.stringify(b));
       });
     return JSON.stringify(normalizedEffects);
   }
 
   async function processEffects(node, nodeType) {
     try {
-      if (!SUPPORTED_NODES.effect.find((n) => n.toLowerCase() === nodeType))
+      if (!SUPPORTED_NODES?.effect?.find((n) => n?.toLowerCase() === nodeType))
         return;
-      if (!node.effects || !node.effects.length) return;
+      if (!node?.effects?.length) return;
 
-      const effectStyle = await getStyleById(node.effectStyleId);
+      const effectStyle = await getStyleById(node?.effectStyleId);
 
       // Process effects for uniqueStyles as before
       if (effectStyle) {
-        const existingStyle = result.effects.uniqueStyles.find(
-          (style) => style.id === effectStyle.id
+        const existingStyle = result?.effects?.uniqueStyles?.find(
+          (style) => style?.id === effectStyle?.id
         );
         if (existingStyle) {
-          existingStyle.frequency += 1;
+          existingStyle.frequency = (existingStyle.frequency ?? 0) + 1;
+          existingStyle.nodeIds?.push(node?.id);
         } else {
-          result.effects.uniqueStyles.push({ ...effectStyle, frequency: 1 });
+          result?.effects?.uniqueStyles?.push({
+            ...effectStyle,
+            frequency: 1,
+            nodeIds: [node?.id]
+          });
         }
-        result.effects.effects.push([{ ...node.effects[0], effectStyle }]);
+        result?.effects?.effects?.push([{ ...node?.effects[0], effectStyle }]);
       } else {
-        result.effects.effects.push(node.effects);
+        result?.effects?.effects?.push(node?.effects);
       }
 
       // Process the entire effects array as one unit
-      const effectsKey = getEffectsKey(node.effects);
+      const effectsKey = getEffectsKey(node?.effects);
 
-      const existingEffectGroup = result.effects.uniqueEffects.find(
-        (unique) => getEffectsKey(unique.value) === effectsKey
+      const existingEffectGroup = result?.effects?.uniqueEffects?.find(
+        (unique) => getEffectsKey(unique?.value) === effectsKey
       );
 
       if (existingEffectGroup) {
-        if (!existingEffectGroup.nodeIds.includes(node.id)) {
-          existingEffectGroup.nodeIds.push(node.id);
+        if (!existingEffectGroup?.nodeIds?.includes(node?.id)) {
+          existingEffectGroup?.nodeIds?.push(node?.id);
         }
       } else {
-        result.effects.uniqueEffects.push({
+        result?.effects?.uniqueEffects?.push({
           value: [...node.effects], // Store the entire effects array
-          nodeIds: [node.id]
+          nodeIds: [node?.id]
         });
       }
     } catch (error) {
@@ -461,34 +457,90 @@ export async function getAllChildren(node) {
     }
   }
   // Process Text/Typography
+  // Helper function to normalize text properties for comparison
+  function normalizeTextProperties(node) {
+    return {
+      fontSize: node?.fontSize,
+      fontName:
+        typeof node?.fontName === "object"
+          ? `${node?.fontName?.family}-${node?.fontName?.style}`
+          : node?.fontName,
+      lineHeight:
+        typeof node?.lineHeight === "object"
+          ? `${node?.lineHeight?.value}-${node?.lineHeight?.unit}`
+          : node?.lineHeight,
+      letterSpacing:
+        typeof node?.letterSpacing === "object"
+          ? `${node?.letterSpacing?.value}-${node?.letterSpacing?.unit}`
+          : node?.letterSpacing,
+      textDecoration: node?.textDecoration || "NONE",
+      textCase: node?.textCase || "ORIGINAL"
+    };
+  }
+
+  // Helper function to generate a unique key for text properties
+  function getTextPropertiesKey(node) {
+    const normalized = normalizeTextProperties(node);
+    return JSON.stringify(normalized);
+  }
+
   function processText(node, nodeType) {
     try {
-      if (!SUPPORTED_NODES.text.find((n) => n.toLowerCase() === nodeType))
+      if (!SUPPORTED_NODES?.text?.find((n) => n?.toLowerCase() === nodeType))
         return;
 
-      const textStyle = node.textStyleId;
+      // Process text style (existing logic)
+      const textStyle = node?.textStyleId;
       if (textStyle) {
-        const existingStyle = result.text.uniqueStyles.find(
-          (style) => style.id === textStyle
+        const existingStyle = result?.text?.uniqueStyles?.find(
+          (style) => style?.id === textStyle
         );
         if (existingStyle) {
-          existingStyle.frequency += 1;
-          existingStyle.nodeIds.push(node.id);
+          existingStyle.frequency = (existingStyle.frequency ?? 0) + 1;
+          existingStyle.nodeIds?.push(node?.id);
         } else {
-          result.text.uniqueStyles.push({
+          result?.text?.uniqueStyles?.push({
             id: textStyle,
-            nodeIds: [node.id],
-            fontSize: node.fontSize,
-            fontName: node.fontName,
-            lineHeight: node.lineHeight,
-            letterSpacing: node.letterSpacing,
-            textDecoration: node.textDecoration,
-            textCase: node.textCase,
+            nodeIds: [node?.id],
+            fontSize: node?.fontSize,
+            fontName: node?.fontName,
+            lineHeight: node?.lineHeight,
+            letterSpacing: node?.letterSpacing,
+            textDecoration: node?.textDecoration,
+            textCase: node?.textCase,
             frequency: 1
           });
         }
       }
-      result.text.nodes.push(node);
+
+      // Process unique text properties
+      const textPropertiesKey = getTextPropertiesKey(node);
+
+      const existingTextGroup = result?.text?.uniqueText?.find(
+        (unique) => getTextPropertiesKey(unique?.value) === textPropertiesKey
+      );
+
+      if (existingTextGroup) {
+        existingTextGroup.frequency = (existingTextGroup.frequency ?? 0) + 1;
+        if (!existingTextGroup?.nodeIds?.includes(node?.id)) {
+          existingTextGroup.nodeIds?.push(node?.id);
+        }
+      } else {
+        result?.text?.uniqueText?.push({
+          value: {
+            fontSize: node?.fontSize,
+            fontName: node?.fontName,
+            lineHeight: node?.lineHeight,
+            letterSpacing: node?.letterSpacing,
+            textDecoration: node?.textDecoration,
+            textCase: node?.textCase
+          },
+          nodeIds: [node?.id],
+          frequency: 1
+        });
+      }
+
+      result?.text?.nodes?.push(node);
     } catch (error) {
       console.error("Error processing text:", error);
     }
@@ -497,27 +549,29 @@ export async function getAllChildren(node) {
   // Process Grids
   async function processGrids(node, nodeType) {
     try {
-      if (!SUPPORTED_NODES.grid.find((n) => n.toLowerCase() === nodeType))
+      if (!SUPPORTED_NODES?.grid?.find((n) => n?.toLowerCase() === nodeType))
         return;
-      if (!node.layoutGrids || !node.layoutGrids.length) return;
+      if (!node?.layoutGrids?.length) return;
 
-      const gridStyle = await getStyleById(node.gridStyleId);
+      const gridStyle = await getStyleById(node?.gridStyleId);
       if (gridStyle) {
-        const existingGrid = result.grids.uniqueGrids.find(
-          (grid) => grid.id === gridStyle.id
+        const existingGrid = result?.grids?.uniqueGrids?.find(
+          (grid) => grid?.id === gridStyle?.id
         );
         if (existingGrid) {
-          existingGrid.frequency += 1;
+          existingGrid.frequency = (existingGrid.frequency ?? 0) + 1;
+          existingGrid.nodeIds?.push(node?.id);
         } else {
-          result.grids.uniqueGrids.push({
+          result?.grids?.uniqueGrids?.push({
             ...gridStyle,
-            layoutGrids: node.layoutGrids[0],
-            frequency: 1
+            layoutGrids: node?.layoutGrids[0],
+            frequency: 1,
+            nodeIds: [node?.id]
           });
         }
-        result.grids.grids.push([{ ...node.layoutGrids[0], gridStyle }]);
+        result?.grids?.grids?.push([{ ...node?.layoutGrids[0], gridStyle }]);
       } else {
-        result.grids.grids.push(node.layoutGrids);
+        result?.grids?.grids?.push(node?.layoutGrids);
       }
     } catch (error) {
       console.error("Error processing grids:", error);
@@ -527,58 +581,60 @@ export async function getAllChildren(node) {
   // Process Spacing
   function processSpacing(node, nodeType) {
     try {
-      if (!SUPPORTED_NODES.spacing.find((n) => n.toLowerCase() === nodeType))
+      if (!SUPPORTED_NODES?.spacing?.find((n) => n?.toLowerCase() === nodeType))
         return;
 
       const spacingData = {
-        nodeId: node.id,
+        nodeId: node?.id,
         margin: {
-          itemSpacing: node.itemSpacing || null,
-          counterAxisSpacing: node.counterAxisSpacing || null,
+          itemSpacing: node?.itemSpacing || null,
+          counterAxisSpacing: node?.counterAxisSpacing || null,
           boundVariables: {
-            itemSpacing: node.boundVariables?.itemSpacing || null,
-            counterAxisSpacing: node.boundVariables?.counterAxisSpacing || null
+            itemSpacing: node?.boundVariables?.itemSpacing || null,
+            counterAxisSpacing: node?.boundVariables?.counterAxisSpacing || null
           }
         },
         padding: {
-          paddingTop: node.paddingTop || null,
-          paddingRight: node.paddingRight || null,
-          paddingBottom: node.paddingBottom || null,
-          paddingLeft: node.paddingLeft || null,
+          paddingTop: node?.paddingTop || null,
+          paddingRight: node?.paddingRight || null,
+          paddingBottom: node?.paddingBottom || null,
+          paddingLeft: node?.paddingLeft || null,
           boundVariables: {
-            paddingTop: node.boundVariables?.paddingTop || null,
-            paddingRight: node.boundVariables?.paddingRight || null,
-            paddingBottom: node.boundVariables?.paddingBottom || null,
-            paddingLeft: node.boundVariables?.paddingLeft || null
+            paddingTop: node?.boundVariables?.paddingTop || null,
+            paddingRight: node?.boundVariables?.paddingRight || null,
+            paddingBottom: node?.boundVariables?.paddingBottom || null,
+            paddingLeft: node?.boundVariables?.paddingLeft || null
           }
         }
       };
 
       const spacingValues = [
-        node.itemSpacing,
-        node.counterAxisSpacing,
-        node.paddingTop,
-        node.paddingRight,
-        node.paddingBottom,
-        node.paddingLeft
+        node?.itemSpacing,
+        node?.counterAxisSpacing,
+        node?.paddingTop,
+        node?.paddingRight,
+        node?.paddingBottom,
+        node?.paddingLeft
       ].filter((value) => value != null);
 
       spacingValues.forEach((value) => {
-        const existingSpacing = result.spacing.uniqueSpacing.find(
-          (spacing) => spacing.value === value
+        const existingSpacing = result?.spacing?.uniqueSpacing?.find(
+          (spacing) => spacing?.value === value
         );
         if (existingSpacing) {
-          existingSpacing.frequency += 1;
+          existingSpacing.frequency = (existingSpacing.frequency ?? 0) + 1;
+          existingSpacing.nodeIds?.push(node?.id);
         } else {
-          result.spacing.uniqueSpacing.push({
+          result?.spacing?.uniqueSpacing?.push({
             value,
-            frequency: 1
+            frequency: 1,
+            nodeIds: [node?.id]
           });
         }
       });
 
       if (spacingValues.length > 0) {
-        result.spacing.nodes.push(spacingData);
+        result?.spacing?.nodes?.push(spacingData);
       }
     } catch (error) {
       console.error("Error processing spacing:", error);
@@ -589,58 +645,65 @@ export async function getAllChildren(node) {
   function processCornerRadius(node, nodeType) {
     try {
       if (
-        !SUPPORTED_NODES.cornerRadius.find((n) => n.toLowerCase() === nodeType)
+        !SUPPORTED_NODES?.cornerRadius?.find(
+          (n) => n?.toLowerCase() === nodeType
+        )
       )
         return;
-      if (!node.cornerRadius) return;
+      if (!node?.cornerRadius) return;
 
-      if (node.cornerRadius === figma.mixed) {
+      if (node?.cornerRadius === figma.mixed) {
         [
-          node.topLeftRadius,
-          node.topRightRadius,
-          node.bottomLeftRadius,
-          node.bottomRightRadius
+          node?.topLeftRadius,
+          node?.topRightRadius,
+          node?.bottomLeftRadius,
+          node?.bottomRightRadius
         ].forEach((radius) => {
           if (radius != null) {
-            const existingRadius = result.cornerRadius.uniqueCornerRadius.find(
-              (r) => r.value === radius
-            );
+            const existingRadius =
+              result?.cornerRadius?.uniqueCornerRadius?.find(
+                (r) => r?.value === radius
+              );
             if (existingRadius) {
-              existingRadius.frequency += 1;
+              existingRadius.frequency = (existingRadius.frequency ?? 0) + 1;
+              existingRadius.nodeIds?.push(node?.id);
             } else {
-              result.cornerRadius.uniqueCornerRadius.push({
+              result?.cornerRadius?.uniqueCornerRadius?.push({
                 value: radius,
-                frequency: 1
+                frequency: 1,
+                nodeIds: [node?.id]
               });
             }
           }
         });
       } else {
-        const existingRadius = result.cornerRadius.uniqueCornerRadius.find(
-          (r) => r.value === node.cornerRadius
+        const existingRadius = result?.cornerRadius?.uniqueCornerRadius?.find(
+          (r) => r?.value === node?.cornerRadius
         );
         if (existingRadius) {
-          existingRadius.frequency += 1;
+          existingRadius.frequency = (existingRadius.frequency ?? 0) + 1;
+          existingRadius.nodeIds?.push(node?.id);
         } else {
-          result.cornerRadius.uniqueCornerRadius.push({
-            value: node.cornerRadius,
-            frequency: 1
+          result?.cornerRadius?.uniqueCornerRadius?.push({
+            value: node?.cornerRadius,
+            frequency: 1,
+            nodeIds: [node?.id]
           });
         }
       }
 
       const cornerRadiusData = {
-        nodeId: node.id,
-        value: node.cornerRadius,
+        nodeId: node?.id,
+        value: node?.cornerRadius,
         boundVariables: {
-          topLeftRadius: node.boundVariables?.topLeftRadius || null,
-          topRightRadius: node.boundVariables?.topRightRadius || null,
-          bottomLeftRadius: node.boundVariables?.bottomLeftRadius || null,
-          bottomRightRadius: node.boundVariables?.bottomRightRadius || null
+          topLeftRadius: node?.boundVariables?.topLeftRadius || null,
+          topRightRadius: node?.boundVariables?.topRightRadius || null,
+          bottomLeftRadius: node?.boundVariables?.bottomLeftRadius || null,
+          bottomRightRadius: node?.boundVariables?.bottomRightRadius || null
         }
       };
 
-      result.cornerRadius.nodes.push(cornerRadiusData);
+      result?.cornerRadius?.nodes?.push(cornerRadiusData);
     } catch (error) {
       console.error("Error processing corner radius:", error);
     }
@@ -650,25 +713,29 @@ export async function getAllChildren(node) {
   async function processComponent(node, nodeType) {
     try {
       if (nodeType === "component" || nodeType === "instance") {
-        const exists = result.components.nodes.some(
-          (existingNode) => existingNode.id === node.id
+        const exists = result?.components?.nodes?.some(
+          (existingNode) => existingNode?.id === node?.id
         );
         if (!exists) {
-          result.components.nodes.push(node);
+          result?.components?.nodes?.push(node);
         }
 
         if (nodeType === "instance") {
-          const mainComponent = await node.getMainComponentAsync();
+          const mainComponent = await node?.getMainComponentAsync();
           if (mainComponent) {
-            const existingComponent = result.components.uniqueComponents.find(
-              (component) => component.id === mainComponent.id
-            );
+            const existingComponent =
+              result?.components?.uniqueComponents?.find(
+                (component) => component?.id === mainComponent?.id
+              );
             if (existingComponent) {
-              existingComponent.frequency += 1;
+              existingComponent.frequency =
+                (existingComponent.frequency ?? 0) + 1;
+              existingComponent.nodeIds?.push(node?.id);
             } else {
-              result.components.uniqueComponents.push({
+              result?.components?.uniqueComponents?.push({
                 ...mainComponent,
-                frequency: 1
+                frequency: 1,
+                nodeIds: [node?.id]
               });
             }
           }
@@ -682,7 +749,7 @@ export async function getAllChildren(node) {
   // Main traverse function that uses all process functions
   async function traverse(node) {
     try {
-      const nodeType = node.type.toLowerCase();
+      const nodeType = node?.type?.toLowerCase();
 
       await processFills(node, nodeType);
       await processStrokes(node, nodeType);
@@ -696,9 +763,9 @@ export async function getAllChildren(node) {
       // Process children recursively
       if ("children" in node) {
         try {
-          for (const child of node.children) {
+          for (const child of node?.children ?? []) {
             try {
-              if (child.type === "TEXT") {
+              if (child?.type === "TEXT") {
                 const parentNodeFill = node?.fills?.find(
                   (fill) =>
                     fill?.visible === true && fill?.opacity && fill?.opacity > 0
@@ -710,7 +777,7 @@ export async function getAllChildren(node) {
 
                 if (
                   parentNodeFill &&
-                  parentNodeFill.color &&
+                  parentNodeFill?.color &&
                   "r" in parentNodeFill.color &&
                   "g" in parentNodeFill.color &&
                   "b" in parentNodeFill.color &&
@@ -721,21 +788,21 @@ export async function getAllChildren(node) {
                 ) {
                   const apcaScore = calculateApcaScore(
                     {
-                      r: textNodeFill.color.r,
-                      g: textNodeFill.color.g,
-                      b: textNodeFill.color.b
+                      r: textNodeFill?.color?.r,
+                      g: textNodeFill?.color?.g,
+                      b: textNodeFill?.color?.b
                     },
                     {
-                      r: parentNodeFill.color.r,
-                      g: parentNodeFill.color.g,
-                      b: parentNodeFill.color.b
+                      r: parentNodeFill?.color?.r,
+                      g: parentNodeFill?.color?.g,
+                      b: parentNodeFill?.color?.b
                     },
-                    figma.root.documentColorProfile
+                    figma?.root?.documentColorProfile
                   );
 
                   if (apcaScore && Math.abs(apcaScore) <= 30) {
-                    result.accessibility_issue.textNodes.push({
-                      nodeId: child.id,
+                    result?.accessibility_issue?.textNodes?.push({
+                      nodeId: child?.id,
                       apca: Math.abs(apcaScore),
                       conclusion: getConclusionByScore(apcaScore)
                     });
